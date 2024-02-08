@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: javawebappbluedeployment
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: java-web-app
+      version: v1
+      color: blue
+  template:
+    metadata:
+      name: javawebapppod
+      labels:
+        app: java-web-app
+        version: v1
+        color: blue
+    spec:
+      containers:
+      - name: javawebappcontainer
+        image: dockerdocker2023/cpubackend
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - secretRef:
+            name: environment-variables
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: javawebappliveservice
+spec:
+  type: LoadBalancer
+  selector:
+    version: v2
+  ports:
+  - port: 5000
+    targetPort: 5000
+...
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-node-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-node-app
+  template:
+    metadata:
+      labels:
+        app: my-node-app
+    spec:
+      containers:
+      - name: my-node-app
+        image: dockerdocker2023/cpubackend
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - secretRef:
+           name: environment-variables
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app
+  labels:
+    run: my-app
+spec:
+  type: NodePort
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+  selector:
+    run: my-app
